@@ -260,13 +260,13 @@ class HasMany extends Relation
     public function hasWhere($where = [], $fields = null)
     {
         $table    = $this->query->getTable();
-        $model    = basename(str_replace('\\', '/', get_class($this->parent)));
+        $parenttable    = $this->parent->db()->getTable();//basename(str_replace('\\', '/', get_class($this->parent)));
         $relation = basename(str_replace('\\', '/', $this->model));
 
         if (is_array($where)) {
             foreach ($where as $key => $val) {
                 if (false === strpos($key, '.')) {
-                    $where[$relation . '.' . $key] = $val;
+                    $where[$table . '.' . $key] = $val;
                     unset($where[$key]);
                 }
             }
@@ -274,10 +274,10 @@ class HasMany extends Relation
 
         $fields = $this->getRelationQueryFields($fields, $model);
 
-        return $this->parent->db()->alias($model)
+        return $this->parent->db()
             ->field($fields)
-            ->group($model . '.' . $this->localKey)
-            ->join([$table => $relation], $model . '.' . $this->localKey . '=' . $relation . '.' . $this->foreignKey)
+            ->group($parenttable . '.' . $this->localKey)
+            ->join($table, $parenttable . '.' . $this->localKey . '=' . $table . '.' . $this->foreignKey)
             ->where($where);
     }
 
